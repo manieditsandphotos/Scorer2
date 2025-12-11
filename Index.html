@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Scorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-600 to-blue-700 min-h-screen">
+    <!-- Home Screen -->
+    <div id="homeScreen" class="container mx-auto p-4">
+        <div class="max-w-md mx-auto mt-20">
+            <div class="bg-white rounded-2xl shadow-2xl p-8">
+                <div class="text-center mb-8">
+                    <div class="text-6xl mb-4">🏆</div>
+                    <h1 class="text-4xl font-bold text-gray-800">Cricket Scorer</h1>
+                    <p class="text-gray-600 mt-2">Track your cricket matches</p>
+                </div>
+                <div class="space-y-4">
+                    <button onclick="showSetup()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition">
+                        ▶️ New Game
+                    </button>
+                    <button onclick="showLoadGame()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition">
+                        💾 Load Saved Game
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Screen -->
+    <div id="setupScreen" class="container mx-auto p-4 hidden">
+        <div class="max-w-md mx-auto mt-10">
+            <button onclick="showHome()" class="mb-4 bg-white text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100">← Back</button>
+            <div class="bg-white rounded-2xl shadow-2xl p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Match Setup</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">👥 Team 1 Name</label>
+                        <input type="text" id="team1Name" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Enter team name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">👥 Team 2 Name</label>
+                        <input type="text" id="team2Name" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Enter team name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">🕐 Number of Overs</label>
+                        <div class="flex items-center gap-3">
+                            <button onclick="changeOvers(-1)" class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300">-</button>
+                            <input type="number" id="overs" value="5" class="w-20 text-center px-4 py-2 border border-gray-300 rounded-lg">
+                            <button onclick="changeOvers(1)" class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">👥 Players Per Team</label>
+                        <div class="flex items-center gap-3">
+                            <button onclick="changePlayers(-1)" class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300">-</button>
+                            <input type="number" id="players" value="11" class="w-20 text-center px-4 py-2 border border-gray-300 rounded-lg">
+                            <button onclick="changePlayers(1)" class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300">+</button>
+                        </div>
+                    </div>
+                    <button onclick="showToss()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-xl transition">Continue to Toss</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toss Screen -->
+    <div id="tossScreen" class="container mx-auto p-4 hidden">
+        <div class="max-w-md mx-auto mt-10">
+            <button onclick="showSetup()" class="mb-4 bg-white text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100">← Back</button>
+            <div class="bg-white rounded-2xl shadow-2xl p-6">
+                <div class="text-center mb-6">
+                    <div class="text-6xl mb-4">🪙</div>
+                    <h2 class="text-2xl font-bold text-gray-800">Toss</h2>
+                </div>
+                <div id="tossOptions" class="space-y-4">
+                    <button onclick="performToss()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-4 px-6 rounded-xl">Flip Coin</button>
+                    <button onclick="skipToss()" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl">Skip Toss</button>
+                </div>
+                <div id="tossResult" class="space-y-4 hidden">
+                    <div class="bg-green-100 border-2 border-green-500 rounded-xl p-4 text-center">
+                        <p class="text-lg font-semibold text-gray-800" id="tossWinnerText"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Decision</label>
+                        <select id="tossDecision" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            <option value="">Select...</option>
+                            <option value="bat">Bat First</option>
+                            <option value="bowl">Bowl First</option>
+                        </select>
+                    </div>
+                    <button onclick="startMatch()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-xl">Start Match</button>
+                </div>
+                <div id="skipTossForm" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Who won the toss?</label>
+                        <select id="skipTossWinner" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            <option value="">Select...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Decision</label>
+                        <select id="skipTossDecision" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            <option value="">Select...</option>
+                            <option value="bat">Bat First</option>
+                            <option value="bowl">Bowl First</option>
+                        </select>
+                    </div>
+                    <button onclick="startMatch()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-xl">Start Match</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scoring Screen -->
+    <div id="scoringScreen" class="container mx-auto p-4 hidden">
+        <div class="max-w-4xl mx-auto">
+            <button onclick="showHome()" class="mb-4 bg-white text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100">← Home</button>
+            <div class="bg-white rounded-2xl shadow-2xl p-6 mb-4">
+                <div class="text-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800" id="matchTitle"></h2>
+                    <p class="text-sm text-gray-600" id="inningsInfo"></p>
+                    <p class="text-sm font-semibold text-blue-600 mt-1" id="targetInfo"></p>
+                </div>
+                <div class="bg-green-50 rounded-xl p-6 mb-4">
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-gray-800 mb-2" id="currentScore">0/0</div>
+                        <div class="text-xl text-gray-600" id="currentOvers">Overs: 0.0 / 5</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <p class="text-sm text-gray-600">Batsman 1 <span id="bat1Strike"></span></p>
+                        <input type="text" id="bat1Name" placeholder="Name" class="w-full px-2 py-1 border border-gray-300 rounded mb-1 text-sm">
+                        <p class="font-semibold text-gray-800" id="bat1Stats">0 (0)</p>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <p class="text-sm text-gray-600">Batsman 2 <span id="bat2Strike"></span></p>
+                        <input type="text" id="bat2Name" placeholder="Name" class="w-full px-2 py-1 border border-gray-300 rounded mb-1 text-sm">
+                        <p class="font-semibold text-gray-800" id="bat2Stats">0 (0)</p>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-3 mb-4">
+                    <p class="text-sm text-gray-600">Bowler</p>
+                    <input type="text" id="bowlerName" placeholder="Name" class="w-full px-2 py-1 border border-gray-300 rounded mb-1 text-sm">
+                    <p class="font-semibold text-gray-800" id="bowlerStats">0/0 (0.0)</p>
+                </div>
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-2">This Over:</p>
+                    <div class="flex gap-2 flex-wrap" id="currentOverDisplay"></div>
+                </div>
+                <button onclick="toggleBallByBall()" class="w-full mb-4 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold">
+                    Show Ball-by-Ball Commentary
+                </button>
+                <div id="ballByBallSection" class="mb-4 bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto hidden">
+                    <h4 class="font-bold text-gray-800 mb-3">Ball-by-Ball Commentary</h4>
+                    <div id="ballByBallList"></div>
+                </div>
+                <div class="grid grid-cols-4 gap-3 mb-3">
+                    <button onclick="addRuns(0)" class="bg-gray-300 hover:bg-gray-400 py-3 rounded-lg font-semibold">0</button>
+                    <button onclick="addRuns(1)" class="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold">1</button>
+                    <button onclick="addRuns(2)" class="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold">2</button>
+                    <button onclick="addRuns(3)" class="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold">3</button>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-3">
+                    <button onclick="addRuns(4)" class="bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-semibold">4</button>
+                    <button onclick="addRuns(6)" class="bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-semibold">6</button>
+                    <button onclick="addWicket()" class="bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold">OUT</button>
+                </div>
+                <div class="grid grid-cols-4 gap-3">
+                    <button onclick="handleExtra('wide')" class="bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold text-sm">Wide</button>
+                    <button onclick="handleExtra('noball')" class="bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold text-sm">No Ball</button>
+                    <button onclick="handleExtra('bye')" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-semibold text-sm">Bye</button>
+                    <button onclick="handleExtra('legbye')" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-semibold text-sm">Leg Bye</button>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-2xl p-6" id="scorecardSection"></div>
+        </div>
+    </div>
+
+    <!-- Extra Dialog -->
+    <div id="extraDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-800 mb-4" id="extraTitle"></h3>
+            <p class="text-gray-600 mb-4" id="extraMessage"></p>
+            <div class="flex gap-2 mb-4">
+                <button onclick="setExtraRuns(0)" class="flex-1 py-3 rounded-lg font-semibold bg-gray-200" id="extra0">0</button>
+                <button onclick="setExtraRuns(1)" class="flex-1 py-3 rounded-lg font-semibold bg-gray-200" id="extra1">1</button>
+                <button onclick="setExtraRuns(2)" class="flex-1 py-3 rounded-lg font-semibold bg-gray-200" id="extra2">2</button>
+                <button onclick="setExtraRuns(3)" class="flex-1 py-3 rounded-lg font-semibold bg-gray-200" id="extra3">3</button>
+                <button onclick="setExtraRuns(4)" class="flex-1 py-3 rounded-lg font-semibold bg-gray-200" id="extra4">4</button>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="closeExtraDialog()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-lg font-semibold">Cancel</button>
+                <button onclick="submitExtra()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Over Summary Dialog -->
+    <div id="overSummaryDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center" id="overSummaryTitle"></h3>
+            <div class="bg-green-50 rounded-lg p-4 mb-4">
+                <p class="text-center text-3xl font-bold text-gray-800 mb-2" id="overSummaryRuns"></p>
+                <p class="text-center text-xl text-red-600 font-semibold" id="overSummaryWickets"></p>
+                <p class="text-center text-sm text-gray-600 mt-2" id="overSummaryBowler"></p>
+            </div>
+            <div class="mb-4">
+                <p class="text-sm font-semibold text-gray-700 mb-2">Over Summary:</p>
+                <div class="flex gap-2 flex-wrap justify-center" id="overSummaryBalls"></div>
+            </div>
+            <button onclick="closeOverSummary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            team1: '', team2: '', overs: 5, playersPerTeam: 11,
+            tossWinner: '', tossDecision: '', battingTeam: '', bowlingTeam: '',
+            innings: 1, target: null,
+            currentBatsman1: { name: '', runs: 0, balls: 0, fours: 0, sixes: 0 },
+            currentBatsman2: { name: '', runs: 0, balls: 0, fours: 0, sixes: 0 },
+            onStrike: 1,
+            currentBowler: { name: '', runs: 0, balls: 0, wickets: 0 },
+            team1Score: { runs: 0, wickets: 0, balls: 0 },
+            team2Score: { runs: 0, wickets: 0, balls: 0 },
+            currentOver: [],
+            team1Batsmen: [], team2Batsmen: [],
+            team1Bowlers: [], team2Bowlers: [],
+            fallOfWickets1: [], fallOfWickets2: [],
+            ballByBall: []
+        };
+
+        let extraType = '';
+        let extraRuns = 0;
+
+        function showHome() {
+            hideAllScreens();
+            document.getElementById('homeScreen').classList.remove('hidden');
+        }
+
+        function showSetup() {
+            hideAllScreens();
+            document.getElementById('setupScreen').classList.remove('hidden');
+        }
+
+        function showToss() {
+            const team1 = document.getElementById('team1Name').value;
+            const team2 = document.getElementById('team2Name').value;
+            if (!team1 || !team2) {
+                alert('Please enter both team names!');
+                return;
+            }
+            gameState.team1 = team1;
+            gameState.team2 = team2;
+            gameState.overs = parseInt(document.getElementById('overs').value);
+            gameState.playersPerTeam = parseInt(document.getElementById('players').value);
+            
+            document.getElementById('skipTossWinner').innerHTML = `
+                <option value="">Select...</option>
+                <option value="${team1}">${team1}</option>
+                <option value="${team2}">${team2}</option>
+            `;
+            
+            hideAllScreens();
+            document.getElementById('tossScreen').classList.remove('hidden');
+        }
+
+        function showLoadGame() {
+            alert('Load game feature - games would be loaded from localStorage in a full implementation');
+        }
+
+        function hideAllScreens() {
+            document.querySelectorAll('[id$="Screen"]').forEach(el => el.classList.add('hidden'));
+        }
+
+        function changeOvers(delta) {
+            const input = document.getElementById('overs');
+            input.value = Math.max(1, parseInt(input.value) + delta);
+        }
+
+        function changePlayers(delta) {
+            const input = document.getElementById('players');
+            input.value = Math.max(1, parseInt(input.value) + delta);
+        }
+
+        function performToss() {
+            const winner = Math.random() < 0.5 ? gameState.team1 : gameState.team2;
+            gameState.tossWinner = winner;
+            document.getElementById('tossWinnerText').textContent = winner + ' won the toss!';
+            document.getElementById('tossOptions').classList.add('hidden');
+            document.getElementById('tossResult').classList.remove('hidden');
+        }
+
+        function skipToss() {
+            document.getElementById('tossOptions').classList.add('hidden');
+            document.getElementById('skipTossForm').classList.remove('hidden');
+        }
+
+        function startMatch() {
+            let decision = document.getElementById('tossDecision').value || document.getElementById('skipTossDecision').value;
+            let winner = gameState.tossWinner || document.getElementById('skipTossWinner').value;
+            
+            if (!winner || !decision) {
+                alert('Please select toss winner and decision!');
+                return;
+            }
+            
+            gameState.tossWinner = winner;
+            gameState.tossDecision = decision;
+            gameState.battingTeam = decision === 'bat' ? winner : (winner === gameState.team1 ? gameState.team2 : gameState.team1);
+            gameState.bowlingTeam = gameState.battingTeam === gameState.team1 ? gameState.team2 : gameState.team1;
+            
+            hideAllScreens();
+            document.getElementById('scoringScreen').classList.remove('hidden');
+            updateScoringDisplay();
+        }
+
+        function updateScoringDisplay() {
+            const currentScore = gameState.battingTeam === gameState.team1 ? gameState.team1Score : gameState.team2Score;
+            
+            document.getElementById('matchTitle').textContent = `${gameState.team1} vs ${gameState.team2}`;
+            document.getElementById('inningsInfo').textContent = `Innings ${gameState.innings} - ${gameState.battingTeam} Batting`;
+            document.getElementById('targetInfo').textContent = gameState.target ? `Target: ${gameState.target} runs` : '';
+            document.getElementById('currentScore').textContent = `${currentScore.runs}/${currentScore.wickets}`;
+            document.getElementById('currentOvers').textContent = `Overs: ${Math.floor(currentScore.balls / 6)}.${currentScore.balls % 6} / ${gameState.overs}`;
+            
+            document.getElementById('bat1Strike').textContent = gameState.onStrike === 1 ? '★' : '';
+            document.getElementById('bat2Strike').textContent = gameState.onStrike === 2 ? '★' : '';
+            document.getElementById('bat1Name').value = gameState.currentBatsman1.name;
+            document.getElementById('bat2Name').value = gameState.currentBatsman2.name;
+            document.getElementById('bat1Stats').textContent = `${gameState.currentBatsman1.runs} (${gameState.currentBatsman1.balls})`;
+            document.getElementById('bat2Stats').textContent = `${gameState.currentBatsman2.runs} (${gameState.currentBatsman2.balls})`;
+            
+            document.getElementById('bowlerName').value = gameState.currentBowler.name;
+            document.getElementById('bowlerStats').textContent = `${gameState.currentBowler.wickets}/${gameState.currentBowler.runs} (${Math.floor(gameState.currentBowler.balls / 6)}.${gameState.currentBowler.balls % 6})`;
+            
+            const overDisplay = document.getElementById('currentOverDisplay');
+            overDisplay.innerHTML = '';
+            gameState.currentOver.forEach(ball => {
+                const span = document.createElement('span');
+                span.className = `px-3 py-1 rounded ${ball === 'W' ? 'bg-red-500 text-white' : 'bg-gray-200'}`;
+                span.textContent = ball;
+                overDisplay.appendChild(span);
+            });
+            
+            updateScorecard();
+            updateBallByBall();
+        }
+
+        function addRuns(runs) {
+            gameState.currentBatsman1.name = document.getElementById('bat1Name').value;
+            gameState.currentBatsman2.name = document.getElementById('bat2Name').value;
+            gameState.currentBowler.name = document.getElementById('bowlerName').value;
+            
+            if (!gameState.currentBatsman1.name || !gameState.currentBatsman2.name) {
+                alert('Please enter names for both batsmen!');
+                return;
+            }
+            if (!gameState.currentBowler.name) {
+                alert('Please enter bowler name!');
+                return;
+            }
+            
+            const batsman = gameState.onStrike === 1 ? 'currentBatsman1' : 'currentBatsman2';
+            const currentScore = gameState.battingTeam === gameState.team1 ? gameState.team1Score : gameState.team2Score;
+            
+            gameState[batsman].runs += runs;
+            gameState[batsman].balls += 1;
+            if (runs === 4) gameState[batsman].fours = (gameState[batsman].fours || 0) + 1;
+            if (runs === 6) gameState[batsman].sixes = (gameState[batsman].sixes || 0) + 1;
+            
+            currentScore.runs += runs;
+            currentScore.balls += 1;
+            
+            gameState.currentBowler.runs += runs;
+            gameState.currentBowler.balls += 1;
+            
+            gameState.ballByBall.push({
+                innings: gameState.innings,
+                over: Math.floor(currentScore.balls / 6),
+                ball: currentScore.balls % 6 || 6,
+                bowler: gameState.currentBowler.name,
+                batsman: gameState[batsman].name,
+                runs: runs,
+                isWicket: false,
+                isExtra: false,
+                totalScore: currentScore.runs,
+                totalWickets: currentScore.wickets
+            });
+            
+            gameState.currentOver.push(runs);
+            
+            if (runs % 2 !== 0) {
+                gameState.onStrike = gameState.onStrike === 1 ? 2 : 1;
+            }
+            
+            updateBatsmenList();
+            updateBowlersList();
+            checkOverComplete();
+            updateScoringDisplay();
+        }
+
+        function addWicket() {
+            gameState.currentBatsman1.name = document.getElementById('bat1Name').value;
+            gameState.currentBatsman2.name = document.getElementById('bat2Name').value;
+            gameState.currentBowler.name = document.getElementById('bowlerName').value;
+            
+            if (!gameState.currentBatsman1.name || !gameState.currentBatsman2.name || !gameState.currentBowler.name) {
+                alert('Please enter all names!');
+                return;
+            }
+            
+            const howOut = prompt('How out? Enter: c (caught), b (bowled), lbw, ro (run out), st (stumped)');
+            if (!howOut) return;
+            
+            let wicketRuns = 0;
+            if (howOut.toLowerCase() === 'ro') {
+                wicketRuns = parseInt(prompt('Runs scored on this ball? (0-3)') || 0);
+            }
+            
+            const batsman = gameState.onStrike === 1 ? 'currentBatsman1' : 'currentBatsman2';
+            const currentScore = gameState.battingTeam === gameState.team1 ? gameState.team1Score : gameState.team2Score;
+            
+            gameState[batsman].balls += 1;
+            gameState[batsman].runs += wicketRuns;
+            
+            currentScore.runs += wicketRuns;
+            currentScore.wickets += 1;
+            currentScore.balls += 1;
+            
+            gameState.currentBowler.runs += wicketRuns;
+            gameState.currentBowler.balls += 1;
+            if (howOut.toLowerCase() !== 'ro') {
+                gameState.currentBowler.wickets += 1;
+            }
+            
+            const dismissedBatsman = {...gameState[batsman]};
+            dismissedBatsman.howOut = howOut.toLowerCase() === 'ro' ? 'run out' : `${howOut} ${gameState.currentBowler.name}`;
+            
+            const batsmenList = gameState.battingTeam === gameState.team1 ? 'team1Batsmen' : 'team2Batsmen';
+            gameState[batsmenList].push(dismissedBatsman);
+            
+            const fowList = gameState.battingTeam === gameState.team1 ? 'fallOfWickets1' : 'fallOfWickets2';
+            gameState[fowList].push({ runs: currentScore.runs, wickets: currentScore.wickets, batsman: dismissedBatsman.name });
+            
+            gameState.ballByBall.push({
+                innings: gameState.innings,
+                over: Math.floor((currentScore.balls - 1) / 6) + 1,
+                ball: ((currentScore.balls - 1) % 6) + 1,
+                bowler: gameState.currentBowler.name,
+                batsman: dismissedBatsman.name,
+                runs: wicketRuns,
+                isWicket: true,
+                isExtra: false,
+                howOut: dismissedBatsman.howOut,
+                totalScore: currentScore.runs,
+                totalWickets: currentScore.wickets
+            });
+            
+            gameState.currentOver.push('W');
+            gameState[batsman] = { name: '', runs: 0, balls: 0, fours: 0, sixes: 0 };
+            
+            if (wicketRuns % 2 !== 0) {
+                gameState.onStrike = gameState.onStrike === 1 ? 2 : 1;
+            }
+            
+            updateBowlersList();
+            checkOverComplete();
+            updateScoringDisplay();
+        }
+
+        function handleExtra(type) {
+            gameState.currentBatsman1.name = document.getElementById('bat1Name').value;
+            gameState.currentBatsman2.name = document.getElementById('bat2Name').value;
+            gameState.currentBowler.name = document.getElementById('bowlerName').value;
+            
+            if (!gameState.currentBatsman1.name || !gameState.currentBatsman2.name || !gameState.currentBowler.name) {
+                alert('Please enter all names!');
+                return;
+            }
+            
+            extraType = type;
+            const titles = { wide: 'Wide Ball', noball: 'No Ball', bye: 'Byes', legbye: 'Leg Byes' };
+            const messages = {
+                wide: 'How many runs scored off this delivery? (excluding the extra)',
+                noball: 'How many runs scored off this delivery? (excluding the extra)',
+                bye: 'How many runs scored?',
+                legbye: 'How many runs scored?'
+            };
+            
+            document.getElementById('extraTitle').textContent = titles[type];
+            document.getElementById('extraMessage').textContent = messages[type];
+            document.getElementById('extraDialog').classList.remove('hidden');
+        }
+
+        function setExtraRuns(runs) {
+            extraRuns = runs;
+            for (let i = 0; i <= 4; i++) {
+                document.getElementById(`extra${i}`).className = i === runs ? 
+                    'flex-1 py-3 rounded-lg font-semibold bg-blue-600 text-white' : 
+                    'flex-1 py-3 rounded-lg font-semibold bg-gray-200';
+            }
+        }
+
+        function closeExtraDialog() {
+            document.getElementById('extraDialog').classList.add('hidden');
+            extraRuns = 0;
+        }
+
+        function submitExtra() {
+            const currentScore = gameState.battingTeam === gameState.team1 ? gameState.team1Score : gameState.team2Score;
+            const batsman = gameState.onStrike === 1 ? 'currentBatsman1' : 'currentBatsman2';
+            
+            let totalRuns = 0;
+            let extraBall = false;
+            
+            if (extraType === 'wide' || extraType === 'noball') {
+                totalRuns = 1 + extraRuns;
+                extraBall = true;
+                gameState[batsman].runs += extraRuns;
+            } else {
+                totalRuns = extraRuns;
+            }
+            
+            currentScore.runs += totalRuns;
+            if (!extraBall) currentScore.balls += 1;
+            
+            gameState.currentBowler.runs += totalRuns;
+            if (!extraBall) gameState.currentBowler.balls += 1;
+            
+            const displayText = extraType === 'wide' ? `Wd+${extraRuns}` : 
+                                extraType === 'noball' ? `Nb+${extraRuns}` :
+                                extraType === 'bye' ? `B${extraRuns}` : `Lb${extraRuns}`;
+            gameState.currentOver.push(displayText);
+            
+            gameState.ballByBall.push({
+                innings: gameState.innings,
+                over: Math.floor(currentScore.balls / 6) + 1,
+                ball: (currentScore.balls % 6) || 1,
+                bowler: gameState.currentBowler.name,
+                batsman: gameState[batsman].name,
+                runs: totalRuns,
+                isWicket: false,
+                isExtra: true,
+                extraType: extraType,
+                totalScore: currentScore.runs,
+                totalWickets: currentScore.wickets
+            });
+            
+            if (totalRuns % 2 !== 0) {
+                gameState.onStrike = gameState.onStrike === 1 ? 2 : 1;
+            }
+            
+            updateBatsmenList();
+            updateBowlersList();
+            if (!extraBall) checkOverComplete();
+            closeExtraDialog();
+            updateScoringDisplay();
+        }
+
+        function checkOverComplete() {
+            const currentScore = gameState.battingTeam === gameState.team1 ? gameState.team1Score : gameState.team2Score;
+            
+            if (currentScore.balls % 6 === 0 && currentScore.balls > 0) {
+                const overRuns = gameState.currentOver.reduce((sum, ball) => {
+                    if (ball === 'W') return sum;
+                    if (typeof ball === 'string' && ball.includes('+')) return sum + parseInt(ball.split('+')[1]) + 1;
+                    if (typeof ball === 'string' && (ball.startsWith('B') || ball.startsWith('Lb'))) return sum + parseInt(ball.substring(1));
+                    return sum + ball;
+                }, 0);
+                
+                const overWickets = gameState.currentOver.filter(b => b === 'W').length;
+                
+                document.getElementById('overSummaryTitle').textContent = `Over ${Math.floor(currentScore.balls / 6)} Complete!`;
+                document.getElementById('overSummaryRuns').textContent = `${overRuns} runs`;
+                document.getElementById('overSummaryWickets').textContent = overWickets > 0 ? `${overWickets} wicket${overWickets > 1 ? 's' : ''}` : '';
+                document.getElementById('overSummaryBowler').textContent = `Bowler: ${gameState.currentBowler.name}`;
+                
+                const ballsDisplay = document.getElementById('overSummaryBalls');
+                ballsDisplay.innerHTML = '';
+                gameState.currentOver.forEach(ball => {
+                    const span = document.createElement('span');
+                    span.className = `px-3 py-1 rounded font-semibold ${ball === 'W' ? 'bg-red-500 text-white' : 'bg-gray-200'}`;
+                    span.textContent = ball;
+                    ballsDisplay.appendChild(span);
+                });
+                
+                document.getElementById('overSummaryDialog').classList.remove('hidden');
+                
+                gameState.currentOver = [];
+                gameState.currentBowler = { name: '', runs: 0, balls: 0, wickets: 0 };
+                gameState.onStrike = gameState.onStrike === 1 ? 2 : 1;
+                
+                if (Math.floor(currentScore.balls / 6) >= gameState.overs && gameState.innings === 1) {
+                    gameState.innings = 2;
+                    gameState.target = currentScore.runs + 1;
+                    const temp = gameState.battingTeam;
+                    gameState.battingTeam = gameState.bowlingTeam;
+                    gameState.bowlingTeam = temp;
+                    gameState.currentBatsman1 = { name: '', runs: 0, balls: 0, fours: 0, sixes: 0 };
+                    gameState.currentBatsman2 = { name: '', runs: 0, balls: 0, fours: 0, sixes: 0 };
+                    gameState.onStrike = 1;
+                }
+            }
+        }
+
+        function closeOverSummary() {
+            document.getElementById('overSummaryDialog').classList.add('hidden');
+            updateScoringDisplay();
+        }
+
+        function updateBatsmenList() {
+            const batsman = gameState.onStrike === 1 ? gameState.currentBatsman1 : gameState.currentBatsman2;
+            const batsmenList = gameState.battingTeam === gameState.team1 ? 'team1Batsmen' : 'team2Batsmen';
+            
+            const existing = gameState[batsmenList].find(b => b.name === batsman.name);
+            if (batsman.name && !existing) {
+                gameState[batsmenList].push({ ...batsman, howOut: 'not out' });
+            } else if (existing) {
+                const index = gameState[batsmenList].findIndex(b => b.name === batsman.name);
+                gameState[batsmenList][index] = { ...batsman, howOut: 'not out' };
+            }
+        }
+
+        function updateBowlersList() {
+            const bowlersList = gameState.battingTeam === gameState.team1 ? 'team2Bowlers' : 'team1Bowlers';
+            const existing = gameState[bowlersList].find(b => b.name === gameState.currentBowler.name);
+            
+            if (gameState.currentBowler.name && !existing) {
+                gameState[bowlersList].push({ ...gameState.currentBowler });
+            } else if (existing) {
+                const index = gameState[bowlersList].findIndex(b => b.name === gameState.currentBowler.name);
+                gameState[bowlersList][index] = { ...gameState.currentBowler };
+            }
+        }
+
+        function toggleBallByBall() {
+            const section = document.getElementById('ballByBallSection');
+            const button = event.target;
+            if (section.classList.contains('hidden')) {
+                section.classList.remove('hidden');
+                button.textContent = 'Hide Ball-by-Ball Commentary';
+            } else {
+                section.classList.add('hidden');
+                button.textContent = 'Show Ball-by-Ball Commentary';
+            }
+        }
+
+        function updateBallByBall() {
+            const list = document.getElementById('ballByBallList');
+            list.innerHTML = '';
+            
+            if (gameState.ballByBall.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-sm">No balls bowled yet</p>';
+                return;
+            }
+            
+            [...gameState.ballByBall].reverse().forEach(ball => {
+                const div = document.createElement('div');
+                div.className = `p-2 rounded mb-2 ${ball.isWicket ? 'bg-red-100 border border-red-300' : 'bg-white border border-gray-200'}`;
+                
+                let ballInfo = '';
+                if (ball.isWicket) {
+                    ballInfo = `<span class="text-red-600 font-bold ml-2">WICKET! (${ball.howOut})</span>`;
+                } else if (ball.isExtra) {
+                    ballInfo = `<span class="ml-2 font-bold text-orange-600">${ball.extraType.toUpperCase()} + ${ball.runs} runs</span>`;
+                } else {
+                    const color = ball.runs === 4 ? 'text-green-600' : ball.runs === 6 ? 'text-purple-600' : 'text-gray-700';
+                    ballInfo = `<span class="ml-2 font-bold ${color}">${ball.runs} runs</span>`;
+                }
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <span class="font-semibold text-xs text-gray-600">Innings ${ball.innings} - Over ${ball.over}.${ball.ball}</span>
+                            <p class="text-sm mt-1">
+                                <span class="font-semibold">${ball.bowler}</span> to <span class="font-semibold">${ball.batsman}</span>
+                                ${ballInfo}
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-semibold text-gray-600">${ball.totalScore}/${ball.totalWickets}</span>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function updateScorecard() {
+            const scorecard = document.getElementById('scorecardSection');
+            let html = '<h3 class="font-bold text-gray-800 mb-3">Scorecard</h3>';
+            
+            html += '<div class="space-y-2 mb-6">';
+            html += `<div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                <span class="font-semibold">${gameState.team1}</span>
+                <span>${gameState.team1Score.runs}/${gameState.team1Score.wickets} (${Math.floor(gameState.team1Score.balls / 6)}.${gameState.team1Score.balls % 6})</span>
+            </div>`;
+            html += `<div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                <span class="font-semibold">${gameState.team2}</span>
+                <span>${gameState.team2Score.runs}/${gameState.team2Score.wickets} (${Math.floor(gameState.team2Score.balls / 6)}.${gameState.team2Score.balls % 6})</span>
+            </div>`;
+            html += '</div>';
+            
+            html += `<div class="mt-6"><h4 class="font-bold text-gray-800 mb-3">${gameState.team1} - Batting</h4>`;
+            if (gameState.team1Batsmen.length > 0) {
+                html += '<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-100"><tr>';
+                html += '<th class="text-left p-2">Batsman</th><th class="text-center p-2">R</th><th class="text-center p-2">B</th>';
+                html += '<th class="text-center p-2">4s</th><th class="text-center p-2">6s</th><th class="text-center p-2">SR</th></tr></thead><tbody>';
+                
+                gameState.team1Batsmen.forEach(bat => {
+                    const sr = bat.balls > 0 ? ((bat.runs / bat.balls) * 100).toFixed(1) : '0.0';
+                    html += `<tr class="border-b"><td class="p-2"><div class="font-semibold">${bat.name}</div><div class="text-xs text-gray-500">${bat.howOut}</div></td>`;
+                    html += `<td class="text-center p-2">${bat.runs}</td><td class="text-center p-2">${bat.balls}</td>`;
+                    html += `<td class="text-center p-2">${bat.fours || 0}</td><td class="text-center p-2">${bat.sixes || 0}</td>`;
+                    html += `<td class="text-center p-2">${sr}</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+                
+                if (gameState.fallOfWickets1.length > 0) {
+                    html += '<div class="mt-3"><p class="text-xs font-semibold text-gray-700 mb-1">Fall of Wickets:</p>';
+                    html += '<p class="text-xs text-gray-600">' + gameState.fallOfWickets1.map(f => `${f.runs}-${f.wickets} (${f.batsman})`).join(', ') + '</p></div>';
+                }
+            } else {
+                html += '<p class="text-gray-500 text-sm">No batsmen yet</p>';
+            }
+            html += '</div>';
+            
+            html += `<div class="mt-6"><h4 class="font-bold text-gray-800 mb-3">${gameState.team2} - Bowling</h4>`;
+            if (gameState.team2Bowlers.length > 0) {
+                html += '<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-100"><tr>';
+                html += '<th class="text-left p-2">Bowler</th><th class="text-center p-2">O</th><th class="text-center p-2">R</th>';
+                html += '<th class="text-center p-2">W</th><th class="text-center p-2">Econ</th></tr></thead><tbody>';
+                
+                gameState.team2Bowlers.forEach(bow => {
+                    const econ = bow.balls > 0 ? ((bow.runs / bow.balls) * 6).toFixed(2) : '0.00';
+                    html += `<tr class="border-b"><td class="p-2 font-semibold">${bow.name}</td>`;
+                    html += `<td class="text-center p-2">${Math.floor(bow.balls / 6)}.${bow.balls % 6}</td>`;
+                    html += `<td class="text-center p-2">${bow.runs}</td><td class="text-center p-2">${bow.wickets}</td>`;
+                    html += `<td class="text-center p-2">${econ}</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+            } else {
+                html += '<p class="text-gray-500 text-sm">No bowlers yet</p>';
+            }
+            html += '</div>';
+            
+            if (gameState.innings === 2) {
+                html += `<div class="mt-6"><h4 class="font-bold text-gray-800 mb-3">${gameState.team2} - Batting</h4>`;
+                if (gameState.team2Batsmen.length > 0) {
+                    html += '<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-100"><tr>';
+                    html += '<th class="text-left p-2">Batsman</th><th class="text-center p-2">R</th><th class="text-center p-2">B</th>';
+                    html += '<th class="text-center p-2">4s</th><th class="text-center p-2">6s</th><th class="text-center p-2">SR</th></tr></thead><tbody>';
+                    
+                    gameState.team2Batsmen.forEach(bat => {
+                        const sr = bat.balls > 0 ? ((bat.runs / bat.balls) * 100).toFixed(1) : '0.0';
+                        html += `<tr class="border-b"><td class="p-2"><div class="font-semibold">${bat.name}</div><div class="text-xs text-gray-500">${bat.howOut}</div></td>`;
+                        html += `<td class="text-center p-2">${bat.runs}</td><td class="text-center p-2">${bat.balls}</td>`;
+                        html += `<td class="text-center p-2">${bat.fours || 0}</td><td class="text-center p-2">${bat.sixes || 0}</td>`;
+                        html += `<td class="text-center p-2">${sr}</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                    
+                    if (gameState.fallOfWickets2.length > 0) {
+                        html += '<div class="mt-3"><p class="text-xs font-semibold text-gray-700 mb-1">Fall of Wickets:</p>';
+                        html += '<p class="text-xs text-gray-600">' + gameState.fallOfWickets2.map(f => `${f.runs}-${f.wickets} (${f.batsman})`).join(', ') + '</p></div>';
+                    }
+                } else {
+                    html += '<p class="text-gray-500 text-sm">No batsmen yet</p>';
+                }
+                html += '</div>';
+                
+                html += `<div class="mt-6"><h4 class="font-bold text-gray-800 mb-3">${gameState.team1} - Bowling</h4>`;
+                if (gameState.team1Bowlers.length > 0) {
+                    html += '<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-100"><tr>';
+                    html += '<th class="text-left p-2">Bowler</th><th class="text-center p-2">O</th><th class="text-center p-2">R</th>';
+                    html += '<th class="text-center p-2">W</th><th class="text-center p-2">Econ</th></tr></thead><tbody>';
+                    
+                    gameState.team1Bowlers.forEach(bow => {
+                        const econ = bow.balls > 0 ? ((bow.runs / bow.balls) * 6).toFixed(2) : '0.00';
+                        html += `<tr class="border-b"><td class="p-2 font-semibold">${bow.name}</td>`;
+                        html += `<td class="text-center p-2">${Math.floor(bow.balls / 6)}.${bow.balls % 6}</td>`;
+                        html += `<td class="text-center p-2">${bow.runs}</td><td class="text-center p-2">${bow.wickets}</td>`;
+                        html += `<td class="text-center p-2">${econ}</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                } else {
+                    html += '<p class="text-gray-500 text-sm">No bowlers yet</p>';
+                }
+                html += '</div>';
+            }
+            
+            scorecard.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
